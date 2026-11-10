@@ -1,0 +1,69 @@
+# GAIA environment
+#
+#   conda env create -f environment.yml
+#   conda activate gaia
+#
+# Versions below are the ones GAIA was developed and validated against.
+# torch/pytorch-cuda are pinned exactly because the two CUDA extensions
+# (diff-gaussian-rasterization, simple-knn) and pytorch3d are built against
+# them; the rest use lower bounds.
+name: gaia
+
+channels:
+  - pytorch
+  - nvidia
+  - pytorch3d
+  - iopath
+  - conda-forge
+
+dependencies:
+  - python=3.8
+  # --- CUDA-linked core: keep these pinned together ---
+  - pytorch=2.1.0
+  - pytorch-cuda=12.1
+  - torchvision=0.16.0
+  - pytorch3d=0.7.7
+  # --- CUDA build toolchain -------------------------------------------------
+  # nvcc is needed twice: to build the two CUDA extensions, and because
+  # gaia/torch_utils/ops JIT-compiles its kernels on first use. Providing it
+  # here keeps the env self-contained -- no system CUDA or container required.
+  # cuda-cccl MUST be pinned: left free, conda resolves it to 13.x against
+  # nvcc 12.1 and the build fails on missing cub/cub.cuh and nv/target.
+  # NOTE: build the CUDA extensions on the SAME node type you run on --
+  # a login node may have a newer glibc, giving GLIBC_2.xx errors at import.
+  - cuda-nvcc=12.1
+  - cuda-libraries-dev=12.1   # cusparse/cublas/cusolver headers: torch's
+                              # ATen/cuda/CUDAContext.h includes <cusparse.h>
+  - cuda-cccl=12.1
+  - ninja>=1.11
+  - setuptools>=69
+  # --- numerics ---
+  - numpy>=1.24,<2
+  - scipy>=1.10
+  - pip
+  - pip:
+      # --- imaging ---
+      - Pillow>=10.0
+      - imageio>=2.35
+      # imageio's mp4 backend. Discovered as a plugin at runtime, never
+      # imported directly, so a static scan misses it -- the gen_* scripts
+      # fail at imageio.get_writer() without it. Bundles its own ffmpeg.
+      - imageio-ffmpeg>=0.5
+      - opencv-python>=4.10,<5
+      - pyspng>=0.1.1        # fast PNG decode in training/dataset.py
+      # --- geometry ---
+      - trimesh>=4.4
+      - roma>=1.5,<1.6        # 1.6 needs torch>=2.4 (torch.amp.custom_fwd)
+      # --- FLAME model deserialization ---
+      # Not imported by any GAIA source file: FLAME2020/generic_model.pkl
+      # contains chumpy objects, so pickle.load pulls it in at runtime. A
+      # static import scan will not find it. chumpy 0.70 does
+      # `from numpy import bool, int, float, ...` at import time, which is why
+      # gaia/flame/FLAME.py installs np.bool/np.int/... shims before loading.
+      - chumpy==0.70
+      # --- CLI / IO / logging ---
+      - click>=8.1
+      - tqdm>=4.66
+      - requests>=2.32
+      - psutil>=6.0
+      - wandb>=0.17

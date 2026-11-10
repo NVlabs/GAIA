@@ -1,0 +1,1 @@
+../third_party/smirk/src/FLAME/FLAME.py

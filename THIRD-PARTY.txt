@@ -1,0 +1,221 @@
+================================================================================
+THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
+GAIA: Generative Animatable Interactive Avatars with Expression-conditioned
+Gaussians
+================================================================================
+
+This project incorporates or depends on third-party software. The components
+below are listed with their upstream source and license. Each component remains
+governed by its own license terms, which take precedence over the GAIA license
+(LICENSE) with respect to that component.
+
+Components consumed as git submodules are NOT redistributed with this
+repository. Running `git submodule update --init --recursive` fetches them
+directly from upstream, under upstream's terms. Their full license texts ship
+inside each submodule directory and are referenced by path below.
+
+
+--------------------------------------------------------------------------------
+1. SUBMODULES (fetched from upstream; not redistributed here)
+--------------------------------------------------------------------------------
+
+Gaussian Splatting
+  Upstream : https://github.com/graphdeco-inria/gaussian-splatting
+  Version  : 472689c
+  License  : Gaussian-Splatting License (Inria / Max Planck Institut fuer
+             Informatik) -- NON-COMMERCIAL RESEARCH AND EVALUATION ONLY
+  Text     : gaia/third_party/gaussian-splatting/LICENSE.md
+  Usage    : Consumed as a submodule. The directories gaia/scene, gaia/utils,
+             gaia/gaussian_renderer and gaia/arguments are symlinks into this
+             submodule. All 15 files reached through them are byte-identical to
+             upstream 472689c; none are modified. GAIA's own changes live in
+             separate wrappers under gaia/gaia_utils/ that import from or
+             subclass the pristine upstream modules.
+
+diff-gaussian-rasterization
+  Upstream : https://github.com/graphdeco-inria/diff-gaussian-rasterization
+  Version  : 59f5f77
+  License  : Gaussian-Splatting License (Inria / MPII) -- NON-COMMERCIAL
+             RESEARCH AND EVALUATION ONLY
+  Text     : gaia/third_party/diff-gaussian-rasterization/LICENSE.md
+  Usage    : CUDA extension, built at install time. Not modified.
+
+OpenGL Mathematics (GLM)
+  Upstream : https://github.com/g-truc/glm
+  Version  : 5c46b9c
+  License  : The Happy Bunny License (Modified MIT) or MIT License,
+             Copyright (c) 2005 G-Truc Creation
+  Text     : gaia/third_party/diff-gaussian-rasterization/third_party/glm/copying.txt
+  Usage    : Header-only math library. Nested submodule of
+             diff-gaussian-rasterization; required to compile that CUDA
+             extension. Not modified.
+
+simple-knn
+  Upstream : https://gitlab.inria.fr/bkerbl/simple-knn
+  Version  : 86710c2
+  License  : Gaussian-Splatting License (Inria / MPII) -- NON-COMMERCIAL
+             RESEARCH AND EVALUATION ONLY
+  Text     : gaia/third_party/simple-knn/LICENSE.md
+  Usage    : CUDA extension, built at install time. Not modified.
+
+SMIRK
+  Upstream : https://github.com/georgeretsi/smirk
+  Version  : c7de404
+  License  : MIT License, Copyright (c) 2024 George Retsinas
+  Text     : gaia/third_party/smirk/LICENSE
+  Usage    : Consumed as a submodule, via symlinks under gaia/flame/ so that
+             SMIRK's own relative imports resolve: lbs.py, _smirk_flame.py and
+             _smirk_util.py each point into gaia/third_party/smirk and are
+             upstream's files, carrying upstream's headers unmodified.
+             gaia/flame/FLAME.py is GAIA-authored: it subclasses SMIRK's FLAME
+             rather than copying it, and contains no upstream code.
+             Two files outside gaia/ do carry SMIRK-derived code:
+             dataset_preprocessing/preprocess_smirk.py and
+             dataset_preprocessing/make_flame_params.py -- see section 2.
+             Note: upstream's src/renderer/util.py (reached as
+             gaia/flame/_smirk_util.py) carries a function upstream attributes to
+             neural_renderer -- see the neural_renderer entry in section 2.
+
+
+--------------------------------------------------------------------------------
+2. SOURCE INCORPORATED INTO THIS REPOSITORY
+--------------------------------------------------------------------------------
+
+EG3D / StyleGAN3
+  Upstream : https://github.com/NVlabs/eg3d
+             https://github.com/NVlabs/stylegan3
+  License  : NVIDIA-owned. Files retain their original NVIDIA headers.
+  Usage    : 34 files under gaia/ are vendored verbatim and are byte-identical
+             to upstream: gaia/dnnlib (2 of 2), gaia/metrics (8 of 9),
+             gaia/torch_utils (4 of 5) and gaia/torch_utils/ops (20 of 20,
+             including the CUDA and C++ sources). A further 15 files are derived
+             from EG3D and modified for GAIA; each carries a header noting that
+             it is based on EG3D.
+
+math_utils.py
+  Upstream : Vendored via EG3D; originally from
+             https://github.com/pkellnhofer
+  License  : MIT License, Copyright (c) 2022 Petr Kellnhofer
+  Text     : full license text retained verbatim in the file header
+  File     : gaia/gaia_utils/math_utils.py
+
+guided-diffusion
+  Upstream : https://github.com/openai/guided-diffusion
+  License  : MIT License
+  Usage    : The zero_module() function in gaia/gaia_utils/general_utils.py is
+             taken from guided_diffusion/nn.py. The attribution above the
+             function names the pinned commit, the exact source line and the
+             upstream licence.
+
+neural_renderer
+  Upstream : https://github.com/daniilidis-group/neural_renderer
+  License  : MIT License
+  Usage    : NOT REDISTRIBUTED by GAIA. Reached through the SMIRK submodule:
+             upstream's src/renderer/util.py (linked as gaia/flame/_smirk_util.py)
+             defines face_vertices(), which upstream attributes to
+             neural_renderer/vertices_to_faces.py, and GAIA calls it from
+             gaia/flame/FLAME.py. The file is fetched from upstream with
+             upstream's attribution comment intact and is not modified.
+             GAIA's own copy of that function (face_vertices_gen() in
+             gaia/gaia_utils/general_utils.py) was dead code kept only so that
+             pre-refactor checkpoints resolved their pickled imports; it was
+             removed with the rest of the compatibility layer, so no
+             neural_renderer-derived source is contained in this repository.
+
+SMIRK (dataset preprocessing)
+  Upstream : https://github.com/georgeretsi/smirk
+  Version  : c7de404
+  License  : MIT License, Copyright (c) 2024 George Retsinas
+  Usage    : dataset_preprocessing/preprocess_smirk.py is adapted from
+             upstream's demo.py to batch-extract FLAME parameters over a folder
+             of images, and dataset_preprocessing/make_flame_params.py is
+             adapted from the same demo.py to extract per-frame FLAME parameters
+             over a video's frames (the --flame-params input of
+             gen_animation.py). Both carry that attribution in their headers.
+             These are the only places GAIA redistributes SMIRK-derived code;
+             under gaia/ SMIRK is consumed as a submodule (see section 1).
+
+MVP (Mixture of Volumetric Primitives)
+  Upstream : https://github.com/facebookresearch/mvp
+  License  : see upstream repository
+  Usage    : gen_tritex() in gaia/gaia_utils/uv.py is a clean-room NumPy
+             reimplementation of MVP's gentritex. Attribution retained in the
+             file header. No MVP source is included.
+
+
+--------------------------------------------------------------------------------
+3. ASSETS AND MODELS (not redistributed)
+--------------------------------------------------------------------------------
+
+None of the items in this section is redistributed with GAIA; the user obtains
+each one themselves at setup time. So that what a user ends up with is what was
+reviewed, gaia/flame/assets/setup_assets.sh applies the following policy:
+
+  * SMIRK's FLAME assets (landmark_embedding.npy, l_eyelid.npy, r_eyelid.npy and
+    mediapipe_landmark_embedding/) are NOT downloaded. They are tracked inside the
+    SMIRK submodule, pinned by gitlink to c7de404, and are symlinked from there.
+  * FlashAvatar's head_template.obj is fetched from the pinned commit 5d6cf43.
+  * FLAME 2020 is NOT downloaded by any GAIA script. It is licence-gated and the user
+    obtains it themselves, so the licence is accepted by a person rather than worked
+    around by a script; its contents are then verified by sha256.
+  * setup_assets.sh ends by running gaia/flame/assets/verify_assets.py, which hard-pins
+    the sha256 and byte size of every downloaded artifact and of the ten generated
+    UV masks, and fails the install on any mismatch.
+
+FLAME 2020
+  Upstream : https://flame.is.tue.mpg.de
+  License  : Max Planck Institute for Intelligent Systems -- license-gated,
+             non-commercial. Requires accepting the FLAME license.
+  Usage    : NOT REDISTRIBUTED, and not downloaded by any GAIA script. The user
+             accepts the upstream license, downloads FLAME2020.zip themselves and
+             unzips it into gaia/flame/assets/; setup_assets.sh refuses to run until
+             it is present and verify_assets.py then checks its sha256.
+
+MODNet
+  Upstream : https://github.com/ZHKKKe/MODNet
+  License  : Apache License 2.0, covering code and models alike.
+  Usage    : NOT REDISTRIBUTED. Used by the optional dataset preprocessing
+             pipeline for alpha mattes. The user clones MODNet and downloads
+             the checkpoint themselves; see dataset_preprocessing/README.md.
+
+FFHQ (Flickr-Faces-HQ)
+  Upstream : https://github.com/NVlabs/ffhq-dataset
+  License  : Creative Commons BY-NC-SA 4.0 for the dataset and metadata;
+             individual images carry their own per-image licenses.
+  Usage    : NOT REDISTRIBUTED. Training data. The user downloads FFHQ and
+             performs EG3D's alignment/cropping themselves; see
+             dataset_preprocessing/README.md.
+
+FlashAvatar
+  Upstream : https://github.com/USTC3DV/FlashAvatar-code
+  Version  : 5d6cf43
+  License  : MIT License
+  Usage    : NOT REDISTRIBUTED. Source of head_template.obj, which carries
+             FLAME topology and UV layout. gaia/flame/assets/setup_assets.sh fetches
+             it from the pinned commit above, and verify_assets.py checks its
+             sha256 (0ee67c4c..., 947447 B) before it is used.
+
+
+--------------------------------------------------------------------------------
+4. PYTHON DEPENDENCIES
+--------------------------------------------------------------------------------
+
+NOT REDISTRIBUTED. See environment.yml for the authoritative list; packages
+are installed from their own channels. The optional dataset preprocessing
+pipeline needs four further packages: mediapipe (Apache-2.0), albumentations
+(MIT), scikit-image (BSD-3-Clause) and timm (Apache-2.0).
+
+
+--------------------------------------------------------------------------------
+5. LICENSE COMPATIBILITY NOTE
+--------------------------------------------------------------------------------
+
+The Gaussian-Splatting components are licensed by Inria/MPII for
+non-commercial research and evaluation only, while GAIA's own license reserves
+commercial rights to NVIDIA. These coexist because those components are
+consumed as submodules: the user fetches them from upstream and is bound by
+upstream's terms directly, and no Inria-licensed source is contained in this
+repository or any GAIA distribution.
+
+Users intending any use beyond non-commercial research must review the license
+of every component listed above.

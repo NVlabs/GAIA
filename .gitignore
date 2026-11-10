@@ -1,0 +1,37 @@
+*.pyc
+*.png
+*.obj
+*.mtl
+*.mp4
+*.pkl
+*.ply
+*.jpg
+*.bin
+*.log
+*.json
+.vscode
+.claude
+
+# Exception: keep the compressed teaser image (<5 MiB JPG) shown in README
+!gaia/assets/teaser.jpg
+
+# wandb
+gaia/wandb
+
+# assets
+gaia/flame/assets/FLAME2020
+gaia/flame/assets/mediapipe_landmark_embedding
+gaia/flame/assets/landmark_embedding.npy
+gaia/flame/assets/l_eyelid.npy
+gaia/flame/assets/r_eyelid.npy
+gaia/flame/assets/flame_uv_close_mouth.obj
+gaia/flame/assets/head_template.obj
+
+# pretrained model
+gaia/pretrained_models
+
+# eval
+gaia/eval
+
+# Cloned by the user per dataset_preprocessing/README.md section 3, not vendored.
+gaia/third_party/MODNet/
